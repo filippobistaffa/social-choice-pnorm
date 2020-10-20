@@ -32,9 +32,9 @@ function FindDeltaConstraints(C,d,A,b,x,i,p)
         inverseCalc = solve(A, R1, transpose(A)*g)
         quadform = transpose(g)*A*inverseCalc
          if quadform ==0
-         	println("s= ",s)
-         	println(norm(inverseCalc,2))
-         	println("norm gradient  ", norm(g,2))
+         	#println("s= ",s)
+         	#println(norm(inverseCalc,2))
+         	#println("norm gradient  ", norm(g,2))
          end
         Δ = i*inverseCalc/(2*quadform)
     else
@@ -132,11 +132,11 @@ function pNorm(ϵ,A,b,p,C,d, x, lb)
     # Initial Solution
     current = norm(A*x - b,p)
 
-    println("initial objective = ",current^p)
+    #println("initial objective = ",current^p)
 
     # Check if the initial solution is 0. In that case return 0.
     if current^p ==0					                             	
-        println("Norm = 0")
+        #println("Norm = 0")
         #println("Max gradient entry:", max_gradient_entry)
         return x
     end
@@ -149,7 +149,7 @@ function pNorm(ϵ,A,b,p,C,d, x, lb)
     # Termination condition, if this is achieved, we have a (1+ϵ)-approximate solution				                         
     while i > 2*ϵ*current^p/(16*p*(1+ϵ))
         iteration = iteration+1
-        println("Iteration count:", iteration) 
+        #println("Iteration count:", iteration) 
 
         # Find the next step                 
         Δ = FindDeltaConstraints(C,d,A,b,x,i,p)
@@ -170,14 +170,14 @@ function pNorm(ϵ,A,b,p,C,d, x, lb)
         if norm(A*(x-α*Δ)-b,p) < current
             x = x-α*Δ
             current = norm(A*x-b,p)
-            println("Reducing norm : ", current^p)
+            #println("Reducing norm : ", current^p)
         else
         	# If we do not reduce the norm, we reduce the padding i.
             need_to_reduce_i = true
         end
 
         if need_to_reduce_i
-        	println("Reducing i")
+        	#println("Reducing i")
             i = i/2
         end
         i = min(i, (current^p - lb^p)/(16*p))
@@ -199,7 +199,7 @@ function pNorm(ϵ,A,b,p,C,d)
     #println(b)
     #println(C)
     #println(d)
-    println("Rank(A) = ", rank(A))
+    #println("Rank(A) = ", rank(A))
     x = InitialSoln(C,d,A,b)
     m = size(b)[1]
     lb = norm(A*x-b, 2)/m^(1/2-1/p)
