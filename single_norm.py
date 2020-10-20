@@ -47,3 +47,8 @@ Main.include('pIRLS/IRLS-pNorm.jl')
 x_j, it = Main.pNorm(args.e, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
 print('JULIA L{}: x ='.format(p))
 print(x_j.reshape((m, m)))
+
+r = np.abs(A @ x_j - b)
+h, b = np.histogram(r, bins=np.arange(10))
+print('Residuals =')
+print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
