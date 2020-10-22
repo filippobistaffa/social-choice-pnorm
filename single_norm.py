@@ -102,14 +102,7 @@ elif p == -1:
         print(tmat.reshape(m, m).T)
     else:
         print(cons.reshape((m, m)).T)
-    # override solution with the one from Omega
-    #cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
-    #if args.u:
-    #    tmat = np.zeros((m * m,))
-    #    tmat[idx[:l]] = cons
-    #    print(tmat.reshape(m, m).T)
-    #else:
-    #    print(cons.reshape((m, m)))
+    print('U∞ =', solution.get_value(t))
 else:
     print('Initialising Julia...')
     from julia.api import Julia
@@ -125,7 +118,20 @@ else:
     else:
         print(cons.reshape((m, m)).T)
 
+# override solution with the one from Omega
+#cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
+#if args.u:
+#    tmat = np.zeros((m * m,))
+#    tmat[idx[:l]] = cons
+#    print(tmat.reshape(m, m).T)
+#else:
+#    print(cons.reshape((m, m)))
+
 r = np.abs(A @ cons - b)
+if p != -1:
+    print('U{} = {}'.format(p, np.linalg.norm(r, p)))
+
+print()
 #print('Residuals =', r)
 print('Max residual =', np.max(r))
 h, b = np.histogram(r, bins=np.arange(10))
