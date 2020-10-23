@@ -192,7 +192,7 @@ end
 # C,d : The linear constraints are Cx = d
 function pNorm(ϵ,A,b,p,C,d)
 
-    println("Running pIRLS for p = ", p)
+    #println("Running pIRLS for p = ", p)
     b = vec(b)
     d = vec(d)
     #println(A)

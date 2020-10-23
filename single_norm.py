@@ -2,7 +2,7 @@ from docplex.mp.model import Model
 import argparse as ap
 import numpy as np
 import os
-np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=5)
+np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=2)
 
 parser = ap.ArgumentParser()
 parser.add_argument('-n', type=int, default=7, help='n')
@@ -47,6 +47,7 @@ d = np.zeros_like(b)
 #print(b.reshape(-1, 1))
 
 def print_consensus(cons):
+    print('Rs =')
     if args.u:
         tmat = np.zeros((m * m,))
         tmat[idx[:l]] = cons
@@ -56,7 +57,6 @@ def print_consensus(cons):
 
 if p == 2:
     cons, res, rank, a = np.linalg.lstsq(A, b, rcond=None)
-    print('NUMPY L2: x =')
     print_consensus(cons)
 elif p == 1:
     model = Model("Sum of absolute residuals approximation")
@@ -75,7 +75,6 @@ elif p == 1:
     cons = np.zeros((l,))
     for j in J:
         cons[j] = solution.get_value(x[j])
-    print('CPLEX L1: x =')
     print_consensus(cons)
 elif p == -1:
     model = Model("Chebyshev approximation")
@@ -94,11 +93,8 @@ elif p == -1:
     cons = np.zeros((l,))
     for j in J:
         cons[j] = solution.get_value(x[j])
-    print('CPLEX L∞: x =')
     print_consensus(cons)
-    print('U∞ =', solution.get_value(t))
 else:
-    print('Initialising Julia...')
     from julia.api import LibJulia
     api = LibJulia.load()
     api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
@@ -106,7 +102,6 @@ else:
     from julia import Main
     Main.include('pIRLS/IRLS-pNorm.jl')
     cons, it = Main.pNorm(args.e, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
-    print('JULIA L{}: x ='.format(p))
     print_consensus(cons)
 
 # override solution with the one from Omega
@@ -120,11 +115,13 @@ else:
 
 r = np.abs(A @ cons - b)
 if p != -1:
-    print('U{} = {}'.format(p, np.linalg.norm(r, p)))
+    print('U{} = {:.2f}'.format(p, np.linalg.norm(r, p)))
+else:
+    print('U∞ = {{:.2f}}'.format(np.max(r)))
 
 print()
 #print('Residuals =', r)
-print('Max residual =', np.max(r))
+print('Max residual = {:.2f}'.format(np.max(r)))
 h, b = np.histogram(r, bins=np.arange(10))
 print('Residuals distribution =')
 print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
