@@ -138,17 +138,17 @@ if __name__ == '__main__':
         for i in range(2, p):
             cons, r, u = Lp(A, b, i)
             #print_consensus(cons)
-            cons_1p = np.linalg.norm(cons_1 - cons)
-            cons_pl = np.linalg.norm(cons_l - cons)
+            dist_1p = np.linalg.norm(cons_1 - cons)
+            dist_pl = np.linalg.norm(cons_l - cons)
             print('p =', i)
-            print('Distance L1<-->L{} = {:.3f}'.format(i, cons_1p))
-            print('Distance L{}<-->L{} = {:.3f}'.format(i, p, cons_pl))
-            print('Difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, abs(cons_1p - cons_pl)))
+            print('Distance L1<-->L{} = {:.3f}'.format(i, dist_1p))
+            print('Distance L{}<-->L{} = {:.3f}'.format(i, p, dist_pl))
+            print('Difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
             print('Current best difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, diff))
-            if (abs(cons_1p - cons_pl) > diff):
+            if (abs(dist_1p - dist_pl) > diff):
                 break
             else:
-                diff = abs(cons_1p - cons_pl)
+                diff = abs(dist_1p - dist_pl)
     else:
         if p == 2:
             cons, r, u = L2(A, b)
