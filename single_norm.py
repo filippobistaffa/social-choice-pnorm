@@ -1,6 +1,7 @@
 from docplex.mp.model import Model
 import argparse as ap
 import numpy as np
+import os
 np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=5)
 
 parser = ap.ArgumentParser()
@@ -105,8 +106,10 @@ elif p == -1:
     print('U∞ =', solution.get_value(t))
 else:
     print('Initialising Julia...')
-    from julia.api import Julia
-    jl = Julia(compiled_modules=False)
+    from julia.api import LibJulia
+    api = LibJulia.load()
+    api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
+    api.init_julia()
     from julia import Main
     Main.include('pIRLS/IRLS-pNorm.jl')
     cons, it = Main.pNorm(args.e, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
