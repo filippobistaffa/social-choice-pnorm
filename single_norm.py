@@ -83,6 +83,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-l', help='compute the limit p', action='store_true')
+    parser.add_argument('-t', help='compute the threshold p', action='store_true')
     args = parser.parse_args()
 
     p = args.p
@@ -126,6 +127,28 @@ if __name__ == '__main__':
             else:
                 print(' (|U∞ - U{}| > {})'.format(p, args.e))
                 p += 1
+    elif args.t:
+        cons_1, r_1, u_1 = L1(A, b)
+        cons_l, r_l, u_l = Lp(A, b, p)
+        #print('L1:')
+        #print_consensus(cons_1)
+        #print('L{}:'.format(p))
+        #print_consensus(cons_l)
+        diff = np.inf
+        for i in range(2, p):
+            cons, r, u = Lp(A, b, i)
+            #print_consensus(cons)
+            cons_1p = np.linalg.norm(cons_1 - cons)
+            cons_pl = np.linalg.norm(cons_l - cons)
+            print('p =', i)
+            print('Distance L1<-->L{} = {:.3f}'.format(i, cons_1p))
+            print('Distance L{}<-->L{} = {:.3f}'.format(i, p, cons_pl))
+            print('Difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, abs(cons_1p - cons_pl)))
+            print('Current best difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, diff))
+            if (abs(cons_1p - cons_pl) > diff):
+                break
+            else:
+                diff = abs(cons_1p - cons_pl)
     else:
         if p == 2:
             cons, r, u = L2(A, b)
