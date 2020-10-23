@@ -12,6 +12,7 @@ parser.add_argument('-e', type=float, default=1e-10, help='e')
 parser.add_argument('-w', type=str, default='w.csv', help='CSV file with weights')
 parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
 parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
+parser.add_argument('-l', help='compute the limit p', action='store_true')
 args = parser.parse_args()
 
 p = args.p
@@ -55,10 +56,12 @@ def print_consensus(cons):
     else:
         print(cons.reshape((m, m)).T)
 
-if p == 2:
+def L2(A, b):
     cons, res, rank, a = np.linalg.lstsq(A, b, rcond=None)
-    print_consensus(cons)
-elif p == 1:
+    r = np.abs(A @ cons - b)
+    return cons, r, np.linalg.norm(r, p)
+
+def L1(A, b):
     model = Model("Sum of absolute residuals approximation")
     # create variables
     t = model.continuous_var_list(len(b))
@@ -75,8 +78,10 @@ elif p == 1:
     cons = np.zeros((l,))
     for j in J:
         cons[j] = solution.get_value(x[j])
-    print_consensus(cons)
-elif p == -1:
+    r = np.abs(A @ cons - b)
+    return cons, r, np.linalg.norm(r, p)
+
+def Linf(A, b):
     model = Model("Chebyshev approximation")
     # create variables
     t = model.continuous_var()
@@ -93,8 +98,10 @@ elif p == -1:
     cons = np.zeros((l,))
     for j in J:
         cons[j] = solution.get_value(x[j])
-    print_consensus(cons)
-else:
+    r = np.abs(A @ cons - b)
+    return cons, r, np.linalg.norm(r, np.inf)
+
+def Lp(A, b):
     from julia.api import LibJulia
     api = LibJulia.load()
     api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
@@ -102,26 +109,35 @@ else:
     from julia import Main
     Main.include('pIRLS/IRLS-pNorm.jl')
     cons, it = Main.pNorm(args.e, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
-    print_consensus(cons)
+    r = np.abs(A @ cons - b)
+    return cons, r, np.linalg.norm(r, p)
 
-# override solution with the one from Omega
-#cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
-#if args.u:
-#    tmat = np.zeros((m * m,))
-#    tmat[idx[:l]] = cons
-#    print(tmat.reshape(m, m).T)
-#else:
-#    print(cons.reshape((m, m)))
+if __name__ == '__main__':
+    if p == 2:
+        cons, r, u = L2(A, b)
+        print_consensus(cons)
+    elif p == 1:
+        cons, r, u = L1(A, b)
+        print_consensus(cons)
+    elif p == -1:
+        cons, r, u = Linf(A, b)
+        print_consensus(cons)
+    else:
+        cons, r, u = Lp(A, b)
+        print_consensus(cons)
 
-r = np.abs(A @ cons - b)
-if p != -1:
-    print('U{} = {:.2f}'.format(p, np.linalg.norm(r, p)))
-else:
-    print('U∞ = {{:.2f}}'.format(np.max(r)))
+    # override solution with the one from Omega
+    #cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
+    #print_consensus(cons)
 
-print()
-#print('Residuals =', r)
-print('Max residual = {:.2f}'.format(np.max(r)))
-h, b = np.histogram(r, bins=np.arange(10))
-print('Residuals distribution =')
-print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
+    if p != -1:
+        print('U{} = {:.2f}'.format(p, u))
+    else:
+        print('U∞ = {:.2f}'.format(u))
+
+    print()
+    #print('Residuals =', r)
+    print('Max residual = {:.2f}'.format(np.max(r)))
+    h, b = np.histogram(r, bins=np.arange(10))
+    print('Residuals distribution =')
+    print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
