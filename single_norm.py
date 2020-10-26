@@ -133,19 +133,20 @@ if __name__ == '__main__':
         cons_l, r_l, u_l = Lp(A, b, p)
         #print('L1:')
         #print_consensus(cons_1)
-        #print('L{}:'.format(p))
+        #print('L{:.1f}:'.format(p))
         #print_consensus(cons_l)
         diff = np.inf
-        for i in range(2, p):
+        incr = 0.1
+        for i in np.arange(2, p, incr):
             cons, r, u = Lp(A, b, i)
             #print_consensus(cons)
             dist_1p = np.linalg.norm(cons_1 - cons)
             dist_pl = np.linalg.norm(cons_l - cons)
-            print('p =', i)
-            print('Distance L1<-->L{} = {:.3f}'.format(i, dist_1p))
-            print('Distance L{}<-->L{} = {:.3f}'.format(i, p, dist_pl))
-            print('Difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
-            print('Current best difference (L1<-->L{}) - (L{}<-->L{}) = {:.3f}'.format(i, i, p, diff))
+            print('p = {:.1f}'.format(i))
+            print('Distance L1<-->L{:.1f} = {:.3f}'.format(i, dist_1p))
+            print('Distance L{:.1f}<-->L{:.1f} = {:.3f}'.format(i, p, dist_pl))
+            print('Difference (L1<-->L{:.1f}) - (L{:.1f}<-->L{:.1f}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
+            print('Current best difference (L1<-->L{:.1f}) - (L{:.1f}<-->L{:.1f}) = {:.3f}'.format(i, i, p, diff))
             if (abs(dist_1p - dist_pl) > diff):
                 break
             else:
