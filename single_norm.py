@@ -1,7 +1,7 @@
 import argparse as ap
 import numpy as np
 import os
-np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=3)
+np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=4)
 
 def print_consensus(cons):
     print('Rs =')
@@ -59,20 +59,45 @@ def Linf(A, b):
     r = np.abs(A @ cons - b)
     return cons, r, np.linalg.norm(r, np.inf)
 
+def IRLS(A, b, p, max_iter=int(1e6), e=1e-3, d=1e-4):
+    n = A.shape[0]
+    D = np.repeat(d, n)
+    W = np.diag(np.repeat(1, n))
+    x = np.linalg.inv(A.T @ W @ A) @ A.T @ W @ b # initial LS solution
+    for i in range(max_iter):
+        W_ = np.diag(np.power(np.maximum(np.abs(b - A @ x), D), p - 2))
+        x_ = np.linalg.inv(A.T @ W_ @ A) @ A.T @ W_ @ b # reweighted LS solution
+        e_ = sum(abs(x - x_))
+        #print(e_)
+        if e_ < e:
+            break
+        else:
+            W = W_
+            x = x_
+    r = np.abs(A @ x - b)
+    return x, r, np.linalg.norm(r, p)
+
 def Lp(A, b, p):
-    from julia.api import LibJulia
-    api = LibJulia.load()
-    api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
-    api.init_julia()
-    from julia import Main
-    Main.include('pIRLS/IRLS-pNorm.jl')
-    # constraints needed for pIRLS (empty)
-    C = np.zeros_like(A)
-    d = np.zeros_like(b)
-    epsilon = 1e-10
-    cons, it = Main.pNorm(epsilon, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
-    r = np.abs(A @ cons - b)
-    return cons, r, np.linalg.norm(r, p)
+    if p >= 2: # pIRLS implementation (NIPS 2019)
+        # uncomment to compare with vanilla implementation
+        #if p < 3: # vanilla does not converge for p >= 3
+        #    cons, _, _ = IRLS(A, b, p)
+        #    print_consensus(cons)
+        from julia.api import LibJulia
+        api = LibJulia.load()
+        api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
+        api.init_julia()
+        from julia import Main
+        Main.include('pIRLS/IRLS-pNorm.jl')
+        # constraints needed for pIRLS (empty)
+        C = np.zeros_like(A)
+        d = np.zeros_like(b)
+        epsilon = 1e-10
+        cons, it = Main.pNorm(epsilon, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
+        r = np.abs(A @ cons - b)
+        return cons, r, np.linalg.norm(r, p)
+    else: # vanilla IRLS implementation
+        return IRLS(A, b, p)
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -133,20 +158,20 @@ if __name__ == '__main__':
         cons_l, r_l, u_l = Lp(A, b, p)
         #print('L1:')
         #print_consensus(cons_1)
-        #print('L{:.1f}:'.format(p))
+        #print('L{:.2f}:'.format(p))
         #print_consensus(cons_l)
         diff = np.inf
-        incr = 0.1
-        for i in np.arange(2, p, incr):
+        incr = 0.01
+        for i in np.arange(1 + incr, p, incr):
             cons, r, u = Lp(A, b, i)
             #print_consensus(cons)
             dist_1p = np.linalg.norm(cons_1 - cons)
             dist_pl = np.linalg.norm(cons_l - cons)
-            print('p = {:.1f}'.format(i))
-            print('Distance L1<-->L{:.1f} = {:.3f}'.format(i, dist_1p))
-            print('Distance L{:.1f}<-->L{:.1f} = {:.3f}'.format(i, p, dist_pl))
-            print('Difference (L1<-->L{:.1f}) - (L{:.1f}<-->L{:.1f}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
-            print('Current best difference (L1<-->L{:.1f}) - (L{:.1f}<-->L{:.1f}) = {:.3f}'.format(i, i, p, diff))
+            print('p = {:.2f}'.format(i))
+            print('Distance L1<-->L{:.2f} = {:.3f}'.format(i, dist_1p))
+            print('Distance L{:.2f}<-->L{:.2f} = {:.3f}'.format(i, p, dist_pl))
+            print('Difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
+            print('Current best difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.3f}'.format(i, i, p, diff))
             if (abs(dist_1p - dist_pl) > diff):
                 break
             else:
