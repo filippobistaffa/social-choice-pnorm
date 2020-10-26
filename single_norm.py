@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser = ap.ArgumentParser()
     parser.add_argument('-n', type=int, default=7, help='n')
     parser.add_argument('-m', type=int, default=5, help='m')
-    parser.add_argument('-p', type=int, default=2, help='p')
+    parser.add_argument('-p', type=float, default=2, help='p')
     parser.add_argument('-e', type=float, default=1e-1, help='e')
     parser.add_argument('-w', type=str, default='w.csv', help='CSV file with weights')
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
