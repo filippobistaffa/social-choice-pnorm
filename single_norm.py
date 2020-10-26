@@ -1,4 +1,3 @@
-from docplex.mp.model import Model
 import argparse as ap
 import numpy as np
 import os
@@ -14,6 +13,7 @@ def print_consensus(cons):
         print(cons.reshape((m, m)).T)
 
 def L1(A, b):
+    from docplex.mp.model import Model
     model = Model("Sum of absolute residuals approximation")
     # create variables
     t = model.continuous_var_list(len(b))
@@ -39,6 +39,7 @@ def L2(A, b):
     return cons, r, np.linalg.norm(r)
 
 def Linf(A, b):
+    from docplex.mp.model import Model
     model = Model("Chebyshev approximation")
     # create variables
     t = model.continuous_var()
