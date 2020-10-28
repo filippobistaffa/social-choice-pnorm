@@ -107,6 +107,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', type=float, default=1e-1, help='e')
     parser.add_argument('-w', type=str, default='w.csv', help='CSV file with weights')
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
+    parser.add_argument('-i', type=str, help='computes equivalent p given an input consensus')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-l', help='compute the limit p', action='store_true')
     parser.add_argument('-t', help='compute the threshold p', action='store_true')
@@ -142,11 +143,11 @@ if __name__ == '__main__':
 
     if args.l:
         cons_inf, r_inf, u_inf = Linf(A, b)
-        print('U∞ = {:.3f}'.format(u_inf))
+        print('U∞ = {:.4f}'.format(u_inf))
         p = 3
         while True:
             cons, r, u = Lp(A, b, p)
-            print('U{} = {:.3f}'.format(p, u), end='')
+            print('U{} = {:.4f}'.format(p, u), end='')
             if abs(u_inf - u) < args.e:
                 print(' (|U∞ - U{}| < {})'.format(p, args.e))
                 break
@@ -167,15 +168,33 @@ if __name__ == '__main__':
             #print_consensus(cons)
             dist_1p = np.linalg.norm(cons_1 - cons, i)
             dist_pl = np.linalg.norm(cons_l - cons, i)
-            print('p = {:.2f}'.format(i))
-            print('Distance L1<-->L{:.2f} = {:.3f}'.format(i, dist_1p))
-            print('Distance L{:.2f}<-->L{:.2f} = {:.3f}'.format(i, p, dist_pl))
-            print('Difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.3f}'.format(i, i, p, abs(dist_1p - dist_pl)))
-            print('Current best difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.3f}'.format(i, i, p, diff))
             if (abs(dist_1p - dist_pl) > diff):
+                print('p = {:.2f} not improving anymore, stopping!'.format(i))
                 break
             else:
+                print('p = {:.2f}'.format(i))
+                print('Distance L1<-->L{:.2f} = {:.4f}'.format(i, dist_1p))
+                print('Distance L{:.2f}<-->L{:.2f} = {:.4f}'.format(i, p, dist_pl))
+                print('Difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.4f}'.format(i, i, p, abs(dist_1p - dist_pl)))
+                print('Current best difference (L1<-->L{:.2f}) - (L{:.2f}<-->L{:.2f}) = {:.4f}'.format(i, i, p, diff))
                 diff = abs(dist_1p - dist_pl)
+    elif args.i:
+        cons = np.genfromtxt(args.i)
+        print_consensus(cons)
+        best = np.inf
+        incr = 0.01
+        for i in np.arange(1 + incr, p, incr):
+            x, r, u = Lp(A, b, i)
+            #print_consensus(x)
+            dist = np.linalg.norm(cons - x, i)
+            if (dist > best):
+                print('p = {:.2f} not improving anymore, stopping!'.format(i))
+                break
+            else:
+                print('p = {:.2f}'.format(i))
+                print('Distance = {:.4f}'.format(dist))
+                print('Current best distance = {:.4f}'.format(best))
+                best = dist
     else:
         if p == 2:
             cons, r, u = L2(A, b)
@@ -195,13 +214,13 @@ if __name__ == '__main__':
         #print_consensus(cons)
 
         if p != -1:
-            print('U{} = {:.3f}'.format(p, u))
+            print('U{} = {:.4f}'.format(p, u))
         else:
-            print('U∞ = {:.3f}'.format(u))
+            print('U∞ = {:.4f}'.format(u))
 
         print()
         #print('Residuals =', r)
-        print('Max residual = {:.3f}'.format(np.max(r)))
+        print('Max residual = {:.4f}'.format(np.max(r)))
         h, b = np.histogram(r, bins=np.arange(10))
         print('Residuals distribution =')
         print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
