@@ -165,8 +165,8 @@ if __name__ == '__main__':
         for i in np.arange(1 + incr, p, incr):
             cons, r, u = Lp(A, b, i)
             #print_consensus(cons)
-            dist_1p = np.linalg.norm(cons_1 - cons)
-            dist_pl = np.linalg.norm(cons_l - cons)
+            dist_1p = np.linalg.norm(cons_1 - cons, i)
+            dist_pl = np.linalg.norm(cons_l - cons, i)
             print('p = {:.2f}'.format(i))
             print('Distance L1<-->L{:.2f} = {:.3f}'.format(i, dist_1p))
             print('Distance L{:.2f}<-->L{:.2f} = {:.3f}'.format(i, p, dist_pl))
