@@ -1,8 +1,6 @@
 import numpy as np
 import warnings
 
-warnings.filterwarnings('ignore') # warkaround to hide warning
-
 def residue_norm(e_list=None):
     residue = 0.0
     for e in e_list:
@@ -10,7 +8,7 @@ def residue_norm(e_list=None):
     return residue
 
 
-def solve(A_list=None, b_list=None, lambda_list=None, p_list=None, max_iter=10000, tol=1.0e-8):
+def solve(A_list=None, b_list=None, lambda_list=None, p_list=None, max_iter=1000000000, tol=1.0e-8):
     """
     Solves a general norm minimization problem
         minimize_x \sum_k \lambda_k * ||A_k x - b_k||_{p_k}^{p_k}
@@ -53,6 +51,7 @@ def solve(A_list=None, b_list=None, lambda_list=None, p_list=None, max_iter=1000
 
     ite = 0
     while ite < max_iter:
+        print(ite)
         ite = ite + 1
         C = alpha * In    # n \times n matrix
         d = np.zeros((n, 1))    # n-vector
