@@ -104,7 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', type=int, default=7, help='n')
     parser.add_argument('-m', type=int, default=5, help='m')
     parser.add_argument('-p', type=float, default=2, help='p')
-    parser.add_argument('-e', type=float, default=1e-1, help='e')
+    parser.add_argument('-e', type=float, default=5e-2, help='e')
     parser.add_argument('-w', type=str, default='w.csv', help='CSV file with weights')
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
     parser.add_argument('-i', type=str, help='computes equivalent p given an input consensus')
@@ -142,18 +142,22 @@ if __name__ == '__main__':
     #print(b.reshape(-1, 1))
 
     if args.l:
-        cons_inf, r_inf, u_inf = Linf(A, b)
-        print('U∞ = {:.4f}'.format(u_inf))
-        p = 3
+        _, _, ua = L1(A, b)
+        print('U1 = {:.4f}'.format(ua))
+        p = 1
+        incr = 0.01
         while True:
-            cons, r, u = Lp(A, b, p)
-            print('U{} = {:.4f}'.format(p, u), end='')
-            if abs(u_inf - u) < args.e:
-                print(' (|U∞ - U{}| < {})'.format(p, args.e))
+            p += incr
+            _, _, ub = Lp(A, b, p)
+            print('U{:.2f} = {:.4f}'.format(p, ub), end='')
+            du = abs(ua - ub)
+            slope = du / incr
+            if du < args.e:
+                print(' (ΔU = {:.4f} < {})'.format(du, args.e))
                 break
             else:
-                print(' (|U∞ - U{}| > {})'.format(p, args.e))
-                p += 1
+                print(' (ΔU = {:.4f} > {})'.format(du, args.e))
+                ua = ub
     elif args.t:
         cons_1, r_1, u_1 = L1(A, b)
         cons_l, r_l, u_l = Lp(A, b, p)
