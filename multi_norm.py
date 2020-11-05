@@ -29,7 +29,7 @@ if __name__ == '__main__':
     m = args.m
 
     w = np.genfromtxt(args.w)
-    p = np.atleast_1d(np.genfromtxt(args.p, dtype=np.int))
+    p = np.atleast_1d(np.genfromtxt(args.p))
 
     if len(p) < 2:
         raise ValueError('Specify at least 2 norm values')

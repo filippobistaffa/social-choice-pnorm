@@ -51,7 +51,6 @@ def solve(A_list=None, b_list=None, lambda_list=None, p_list=None, max_iter=1000
 
     ite = 0
     while ite < max_iter:
-        print(ite)
         ite = ite + 1
         C = alpha * In    # n \times n matrix
         d = np.zeros((n, 1))    # n-vector
