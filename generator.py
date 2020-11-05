@@ -3,7 +3,7 @@ import os
 
 seed = 0
 reps = 10
-precision = 2
+precision = 1
 
 np.random.seed(seed)
 b_dir = 'distributions'
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     for i in range(reps):
         # polarised
         for j in range(1, 7):
-            dist = generate_polarised(1.2, 0.05, 2.15,0.05, j, 7 - j)
+            dist = generate_polarised(1.05, 0.05, 2.15, 0.05, j, 7 - j)
             p, l = np.unique(np.around(dist, precision), return_counts=True)
             p_dir_t = p_dir + '_{}_{}'.format(j, 7 - j)
             os.makedirs(p_dir_t, exist_ok=True)
