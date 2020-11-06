@@ -53,14 +53,16 @@ if __name__ == '__main__':
         np.savetxt(os.path.join(u_dir, 'l_{}.csv'.format(i)), l, fmt='%d')
         append(cumulative, u_dir, dist)
         # gaussian
-        dist = generate_gaussian(1.4, 0.05, 7)
-        dist = np.around(dist, precision)
-        dist = np.clip(dist, 1, 3)
-        p, l = np.unique(dist, return_counts=True)
-        os.makedirs(g_dir, exist_ok=True)
-        np.savetxt(os.path.join(g_dir, 'p_{}.csv'.format(i)), p, fmt='%.{}f'.format(precision))
-        np.savetxt(os.path.join(g_dir, 'l_{}.csv'.format(i)), l, fmt='%d')
-        append(cumulative, g_dir, dist)
+        for mu in [1.2, 1.4, 2.15]:
+            dist = generate_gaussian(mu, 0.05, 7)
+            dist = np.around(dist, precision)
+            dist = np.clip(dist, 1, 3)
+            p, l = np.unique(dist, return_counts=True)
+            g_dir_t = g_dir + '_{}'.format(mu)
+            os.makedirs(g_dir_t, exist_ok=True)
+            np.savetxt(os.path.join(g_dir_t, 'p_{}.csv'.format(i)), p, fmt='%.{}f'.format(precision))
+            np.savetxt(os.path.join(g_dir_t, 'l_{}.csv'.format(i)), l, fmt='%d')
+            append(cumulative, g_dir_t, dist)
     for directory, distribution in cumulative.items():
         p, l = np.unique(distribution, return_counts=True)
         np.savetxt(os.path.join(directory, 'cumul.csv'), np.vstack((p, l)).T,
