@@ -88,7 +88,7 @@ def Lp(A, b, p):
         api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
         api.init_julia()
         from julia import Main
-        Main.include('pIRLS/IRLS-pNorm.jl')
+        Main.include(os.path.dirname(os.path.realpath(__file__)) + '/IRLS-pNorm.jl')
         # constraints needed for pIRLS (empty)
         C = np.zeros_like(A)
         d = np.zeros_like(b)
