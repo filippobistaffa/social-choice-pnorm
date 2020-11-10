@@ -1,5 +1,5 @@
 
-A norm approximation approach to account formultiple ethical principles in social choice
+A norm approximation approach to account for multiple ethical principles in social choice
 ===================
 This repository contains the implementation of all the algorithms and data of the experimental section of
 "A Norm Approximation Approach to Account for Multiple Ethical Principles in Social Choice"
