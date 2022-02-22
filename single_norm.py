@@ -1,5 +1,6 @@
 import argparse as ap
 import numpy as np
+import cvxpy as cp
 import os
 np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=4)
 
@@ -12,92 +13,13 @@ def print_consensus(cons):
     else:
         print(cons.reshape((m, m)).T)
 
-def L1(A, b):
-    from docplex.mp.model import Model
-    model = Model("Sum of absolute residuals approximation")
-    # create variables
-    t = model.continuous_var_list(len(b))
-    x = model.continuous_var_list(l)
-    # create constraints
-    I = range(len(b))   # size of b
-    J = range(l)        # size of x
-    for i in I:
-        model.add_constraint(model.sum(A[i,j] * x[j] for j in J) - b[i] >= -t[i])
-        model.add_constraint(model.sum(A[i,j] * x[j] for j in J) - b[i] <= t[i])
-    model.minimize(model.sum(t))
-    # optimize model
-    solution = model.solve()
-    cons = np.zeros((l,))
-    for j in J:
-        cons[j] = solution.get_value(x[j])
-    r = np.abs(A @ cons - b)
-    return cons, r, np.linalg.norm(r, 1)
-
-def L2(A, b):
-    cons, res, rank, a = np.linalg.lstsq(A, b, rcond=None)
-    r = np.abs(A @ cons - b)
-    return cons, r, np.linalg.norm(r)
-
-def Linf(A, b):
-    from docplex.mp.model import Model
-    model = Model("Chebyshev approximation")
-    # create variables
-    t = model.continuous_var()
-    x = model.continuous_var_list(l)
-    # create constraints
-    I = range(len(b))   # size of b
-    J = range(l)        # size of x
-    for i in I:
-        model.add_constraint(model.sum(A[i,j] * x[j] for j in J) - b[i] >= -t)
-        model.add_constraint(model.sum(A[i,j] * x[j] for j in J) - b[i] <= t)
-    model.minimize(t)
-    # optimize model
-    solution = model.solve()
-    cons = np.zeros((l,))
-    for j in J:
-        cons[j] = solution.get_value(x[j])
-    r = np.abs(A @ cons - b)
-    return cons, r, np.linalg.norm(r, np.inf)
-
-def IRLS(A, b, p, max_iter=int(1e6), e=1e-3, d=1e-4):
-    n = A.shape[0]
-    D = np.repeat(d, n)
-    W = np.diag(np.repeat(1, n))
-    x = np.linalg.inv(A.T @ W @ A) @ A.T @ W @ b # initial LS solution
-    for i in range(max_iter):
-        W_ = np.diag(np.power(np.maximum(np.abs(b - A @ x), D), p - 2))
-        x_ = np.linalg.inv(A.T @ W_ @ A) @ A.T @ W_ @ b # reweighted LS solution
-        e_ = sum(abs(x - x_))
-        #print(e_)
-        if e_ < e:
-            break
-        else:
-            W = W_
-            x = x_
-    r = np.abs(A @ x - b)
-    return x, r, np.linalg.norm(r, p)
-
 def Lp(A, b, p):
-    if p >= 2: # pIRLS implementation (NIPS 2019)
-        # uncomment to compare with vanilla implementation
-        #if p < 3: # vanilla does not converge for p >= 3
-        #    cons, _, _ = IRLS(A, b, p)
-        #    print_consensus(cons)
-        from julia.api import LibJulia
-        api = LibJulia.load()
-        api.sysimage = os.path.dirname(os.path.realpath(__file__)) + '/sys.so'
-        api.init_julia()
-        from julia import Main
-        Main.include(os.path.dirname(os.path.realpath(__file__)) + '/IRLS-pNorm.jl')
-        # constraints needed for pIRLS (empty)
-        C = np.zeros_like(A)
-        d = np.zeros_like(b)
-        epsilon = 1e-10
-        cons, it = Main.pNorm(epsilon, A, b.reshape(-1, 1), p, C, d.reshape(-1, 1))
-        r = np.abs(A @ cons - b)
-        return cons, r, np.linalg.norm(r, p)
-    else: # vanilla IRLS implementation
-        return IRLS(A, b, p)
+    x = cp.Variable(l)
+    cost = cp.pnorm(A @ x - b, p)
+    prob = cp.Problem(cp.Minimize(cost))
+    prob.solve(solver='CPLEX', verbose=False, cplex_params={})
+    r = np.abs(A @ x.value - b)
+    return x.value, r, np.linalg.norm(r, p)
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -143,7 +65,7 @@ if __name__ == '__main__':
     #print(b.reshape(-1, 1))
 
     if args.l:
-        _, _, ua = L1(A, b)
+        _, _, ua = Lp(A, b, 1)
         print('U1 = {:.4f}'.format(ua))
         p = 1
         incr = 0.01
@@ -160,7 +82,7 @@ if __name__ == '__main__':
                 print(' (ΔU = {:.4f} > {})'.format(du, args.e))
                 ua = ub
     elif args.t:
-        cons_1, r_1, u_1 = L1(A, b)
+        cons_1, r_1, u_1 = Lp(A, b, 1)
         cons_l, r_l, u_l = Lp(A, b, p)
         #print('L1:')
         #print_consensus(cons_1)
@@ -201,34 +123,16 @@ if __name__ == '__main__':
                 print('Current best distance = {:.4f}'.format(best))
                 best = dist
     else:
-        if p == 2:
-            cons, r, u = L2(A, b)
-            print_consensus(cons)
-        elif p == 1:
-            cons, r, u = L1(A, b)
-            print_consensus(cons)
-        elif p == -1:
-            cons, r, u = Linf(A, b)
-            print_consensus(cons)
-        else:
-            cons, r, u = Lp(A, b, p)
-            print_consensus(cons)
-
+        cons, r, u = Lp(A, b, np.inf if p < 0 else p)
+        print_consensus(cons)
         # override solution with the one from Omega
         #cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
         #print_consensus(cons)
-
-        if p != -1:
-            print('U{} = {:.4f}'.format(p, u))
-        else:
-            print('U∞ = {:.4f}'.format(u))
-
-        print()
+        print('U{} = {:.4f}\n'.format('∞' if p < 0 else p, u))
         #print('Residuals =', r)
         print('Max residual = {:.4f}'.format(np.max(r)))
         h, b = np.histogram(r, bins=np.arange(10))
         print('Residuals distribution =')
         print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
-
         if args.o:
             np.savetxt(args.o, cons, fmt='%.20f')

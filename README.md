@@ -7,7 +7,6 @@ by Francisco Salas-Molina, Filippo Bistaffa, and Juan A. Rodríguez-Aguilar.
 Dependencies
 ----------
  - [Python 3](https://www.python.org/downloads/)
- - [Julia](https://julialang.org/downloads/) and [PyJulia](https://pyjulia.readthedocs.io/en/latest/installation.html) (compiling a [custom system image](https://pyjulia.readthedocs.io/en/latest/sysimage.html) is required for faster initialisation)
  - [IBM CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio)
 
 Dataset
@@ -51,7 +50,6 @@ optional arguments:
   -u          optimize only upper-triangular
   -v          verbose mode
 ```
-
 
 Acknowledgements
 ----------
