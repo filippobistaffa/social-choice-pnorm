@@ -18,8 +18,8 @@ def Lp(A, b, p):
     cost = cp.pnorm(A @ x - b, p)
     prob = cp.Problem(cp.Minimize(cost))
     prob.solve(solver='CPLEX', verbose=False, cplex_params={})
-    r = np.abs(A @ x.value - b)
-    return x.value, r, np.linalg.norm(r, p)
+    res = np.abs(A @ x.value - b)
+    return x.value, res, prob.value
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
