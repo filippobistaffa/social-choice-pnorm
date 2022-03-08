@@ -3,33 +3,37 @@ import cvxpy as cp
 import numpy as np
 np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=4)
 
+
 def print_consensus(cons):
     print('Rs =')
     if args.u:
         tmat = np.zeros((m * m,))
-        tmat[idx[:l]] = cons
+        tmat[idx[:v]] = cons
         print(tmat.reshape(m, m).T)
     else:
         print(cons.reshape((m, m)).T)
 
+
 def Lp_norm(A, b, p):
-    x = cp.Variable(l)
+    x = cp.Variable(v)
     cost = cp.pnorm(A @ x - b, p)
     prob = cp.Problem(cp.Minimize(cost))
     prob.solve(solver='CPLEX', verbose=False)
     return prob.value
 
+
 def mLp(A, b, ps, λs):
     wps = [λ / Lp_norm(A, b, p) for λ, p in zip(λs, ps)]
-    #wps = [λ for λ, p in zip(λs, ps)]
-    #print(list(zip(wps, ps)))
-    x = cp.Variable(l)
+    # wps = [λ for λ, p in zip(λs, ps)]
+    # print(list(zip(wps, ps)))
+    x = cp.Variable(v)
     cost = cp.sum([wp * cp.pnorm(A @ x - b, p) for wp, p in zip(wps, ps)])
     prob = cp.Problem(cp.Minimize(cost))
     prob.solve(solver='CPLEX', verbose=False, cplex_params={})
     res = np.abs(A @ x.value - b)
-    #print([wp * np.linalg.norm(res, p) for wp, p in zip(wps, ps)])
+    # print([wp * np.linalg.norm(res, p) for wp, p in zip(wps, ps)])
     return x.value, res, prob.value / sum(wps)
+
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -56,17 +60,17 @@ if __name__ == '__main__':
             for j in range(m):
                 for k in range(j):
                     idx.append(k + m * j + m * m * i)
-        l = int(m * (m - 1) / 2)
+        v = int(m * (m - 1) / 2)
         b = np.genfromtxt(args.b)[idx]
     else:
         b = np.genfromtxt(args.b)
-        l = m * m
+        v = m * m
 
     w = np.genfromtxt(args.w)
-    w = np.repeat(w, l)
+    w = np.repeat(w, v)
     b = np.multiply(b, w)
 
-    A = np.tile(np.identity(l), (n, 1))
+    A = np.tile(np.identity(v), (n, 1))
     A = np.multiply(A, w.reshape(-1, 1))
 
     if args.v:
@@ -80,7 +84,7 @@ if __name__ == '__main__':
     cons, r, u = mLp(A, b, ps, λs)
     print_consensus(cons)
     print('U{} = {:.4f}\n'.format(ps, u))
-    #print('Residuals =', r)
+    # print('Residuals =', r)
     print('Max residual = {:.4f}'.format(np.max(r)))
     h, b = np.histogram(r, bins=np.arange(10))
     print('Residuals distribution =')

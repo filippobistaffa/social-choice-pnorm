@@ -1,25 +1,27 @@
 import argparse as ap
 import numpy as np
 import cvxpy as cp
-import os
 np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=4)
+
 
 def print_consensus(cons):
     print('Rs =')
     if args.u:
         tmat = np.zeros((m * m,))
-        tmat[idx[:l]] = cons
+        tmat[idx[:v]] = cons
         print(tmat.reshape(m, m).T)
     else:
         print(cons.reshape((m, m)).T)
 
+
 def Lp(A, b, p):
-    x = cp.Variable(l)
+    x = cp.Variable(v)
     cost = cp.pnorm(A @ x - b, p)
     prob = cp.Problem(cp.Minimize(cost))
     prob.solve(solver='CPLEX', verbose=False, cplex_params={})
     res = np.abs(A @ x.value - b)
     return x.value, res, prob.value
+
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser()
@@ -46,23 +48,23 @@ if __name__ == '__main__':
             for j in range(m):
                 for k in range(j):
                     idx.append(k + m * j + m * m * i)
-        l = int(m * (m - 1) / 2)
+        v = int(m * (m - 1) / 2)
         b = np.genfromtxt(args.b)[idx]
     else:
         b = np.genfromtxt(args.b)
-        l = m * m
+        v = m * m
 
     w = np.genfromtxt(args.w)
-    w = np.repeat(w, l)
+    w = np.repeat(w, v)
     b = np.multiply(b, w)
 
-    A = np.tile(np.identity(l), (n, 1))
+    A = np.tile(np.identity(v), (n, 1))
     A = np.multiply(A, w.reshape(-1, 1))
 
-    #print('A =')
-    #print(A)
-    #print('b =')
-    #print(b.reshape(-1, 1))
+    # print('A =')
+    # print(A)
+    # print('b =')
+    # print(b.reshape(-1, 1))
 
     if args.l:
         _, _, ua = Lp(A, b, 1)
@@ -84,15 +86,15 @@ if __name__ == '__main__':
     elif args.t:
         cons_1, r_1, u_1 = Lp(A, b, 1)
         cons_l, r_l, u_l = Lp(A, b, p)
-        #print('L1:')
-        #print_consensus(cons_1)
-        #print('L{:.2f}:'.format(p))
-        #print_consensus(cons_l)
+        # print('L1:')
+        # print_consensus(cons_1)
+        # print('L{:.2f}:'.format(p))
+        # print_consensus(cons_l)
         diff = np.inf
         incr = 0.01
         for i in np.arange(1 + incr, p, incr):
             cons, r, u = Lp(A, b, i)
-            #print_consensus(cons)
+            # print_consensus(cons)
             dist_1p = np.linalg.norm(cons_1 - cons, i)
             dist_pl = np.linalg.norm(cons_l - cons, i)
             if (abs(dist_1p - dist_pl) > diff):
@@ -112,7 +114,7 @@ if __name__ == '__main__':
         incr = 0.01
         for i in np.arange(1 + incr, p, incr):
             x, r, u = Lp(A, b, i)
-            #print_consensus(x)
+            # print_consensus(x)
             dist = np.linalg.norm(cons - x, i)
             if (dist > best):
                 print('Not improving anymore, stopping!'.format(i))
@@ -128,10 +130,10 @@ if __name__ == '__main__':
         cons, r, u = Lp(A, b, p)
         print_consensus(cons)
         # override solution with the one from Omega
-        #cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
-        #print_consensus(cons)
+        # cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
+        # print_consensus(cons)
         print('U{} = {:.4f}\n'.format(p, u))
-        #print('Residuals =', r)
+        # print('Residuals =', r)
         print('Max residual = {:.4f}'.format(np.max(r)))
         h, b = np.histogram(r, bins=np.arange(10))
         print('Residuals distribution =')
