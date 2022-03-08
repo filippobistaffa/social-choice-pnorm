@@ -123,12 +123,14 @@ if __name__ == '__main__':
                 print('Current best distance = {:.4f}'.format(best))
                 best = dist
     else:
-        cons, r, u = Lp(A, b, np.inf if p < 0 else p)
+        if p < 0:
+            p = np.inf
+        cons, r, u = Lp(A, b, p)
         print_consensus(cons)
         # override solution with the one from Omega
         #cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
         #print_consensus(cons)
-        print('U{} = {:.4f}\n'.format('∞' if p < 0 else p, u))
+        print('U{} = {:.4f}\n'.format(p, u))
         #print('Residuals =', r)
         print('Max residual = {:.4f}'.format(np.max(r)))
         h, b = np.histogram(r, bins=np.arange(10))
