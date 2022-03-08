@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-l', help='compute the limit p', action='store_true')
     parser.add_argument('-t', help='compute the threshold p', action='store_true')
+    parser.add_argument('-r', help='show histogram of residuals', action='store_true')
     args = parser.parse_args()
 
     p = args.p
@@ -132,11 +133,16 @@ if __name__ == '__main__':
         # override solution with the one from Omega
         # cons = np.array([5,1,5,1.4,5,5,1,3,7,3])
         # print_consensus(cons)
-        print('U{} = {:.4f}\n'.format(p, u))
+        print('U{} = {:.4f}'.format(p, u))
         # print('Residuals =', r)
         print('Max residual = {:.4f}'.format(np.max(r)))
-        h, b = np.histogram(r, bins=np.arange(10))
-        print('Residuals distribution =')
-        print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
+        if args.r:
+            print('Residuals distribution:')
+            try:
+                import plotille
+                print(plotille.hist(r))
+            except ImportError:
+                h, b = np.histogram(r, bins=np.arange(10))
+                print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
         if args.o:
             np.savetxt(args.o, cons, fmt='%.20f')

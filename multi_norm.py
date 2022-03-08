@@ -46,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', type=str, help='write consensus to file')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
+    parser.add_argument('-r', help='show histogram of residuals', action='store_true')
     args = parser.parse_args()
 
     n = args.n
@@ -83,12 +84,15 @@ if __name__ == '__main__':
 
     cons, r, u = mLp(A, b, ps, λs)
     print_consensus(cons)
-    print('U{} = {:.4f}\n'.format(ps, u))
-    # print('Residuals =', r)
+    print('U{} = {:.4f}'.format(ps, u))
     print('Max residual = {:.4f}'.format(np.max(r)))
-    h, b = np.histogram(r, bins=np.arange(10))
-    print('Residuals distribution =')
-    print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
-
+    if args.r:
+        print('Residuals distribution:')
+        try:
+            import plotille
+            print(plotille.hist(r))
+        except ImportError:
+            h, b = np.histogram(r, bins=np.arange(10))
+            print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
     if args.o:
         np.savetxt(args.o, cons, fmt='%.20f')
