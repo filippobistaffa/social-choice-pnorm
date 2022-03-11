@@ -70,7 +70,6 @@ if __name__ == '__main__':
     w = np.genfromtxt(args.w)
     w = np.repeat(w, v)
     b = np.multiply(b, w)
-
     A = np.tile(np.identity(v), (n, 1))
     A = np.multiply(A, w.reshape(-1, 1))
 
@@ -84,8 +83,10 @@ if __name__ == '__main__':
 
     cons, r, u = mLp(A, b, ps, λs)
     print_consensus(cons)
+
     print('U{} = {:.4f}'.format(ps, u))
     print('Max residual = {:.4f}'.format(np.max(r)))
+
     if args.r:
         print('Residuals distribution:')
         try:
@@ -94,5 +95,6 @@ if __name__ == '__main__':
         except ImportError:
             h, b = np.histogram(r, bins=np.arange(10))
             print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
+
     if args.o:
         np.savetxt(args.o, cons, fmt='%.20f')
