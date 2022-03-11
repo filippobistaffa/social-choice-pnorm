@@ -46,7 +46,8 @@ if __name__ == '__main__':
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('--histogram', help='show histogram of residuals', action='store_true')
-    parser.add_argument('--boxplot', help='show boxplot of residuals', action='store_true')
+    parser.add_argument('--boxplot', type=str, help='save boxplot of residuals to image')
+    parser.add_argument('--split', help='one boxplot per norm', action='store_true')
     parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
@@ -85,14 +86,25 @@ if __name__ == '__main__':
         print('λ =', λs)
 
     if args.boxplot:
-        _, r, _ = mLp(A, b, ps, λs, False)
-        _, rw, _ = mLp(A, b, ps, λs, True)
-        import matplotlib.pyplot as plt
-        fig, ax = plt.subplots()
-        ax.set_title('Boxplots of residuals for p = {}'.format(ps))
-        ax.boxplot([r, rw])
-        ax.set_xticklabels(['Not Weighted', 'Weighted'])
-        plt.show()
+        if args.split:
+            rp = [mLp(A, b, [p], [1], False)[1] for p in ps]
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.set_title('Boxplots of residuals')
+            ax.boxplot(rp)
+            ax.set(ylim=(-0.25, 6.25))
+            ax.set_xticklabels(['p = {}'.format(p) for p in ps])
+            plt.savefig(args.boxplot)
+        else:
+            _, r, _ = mLp(A, b, ps, λs, False)
+            _, rw, _ = mLp(A, b, ps, λs, True)
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots()
+            ax.set_title('Boxplots of residuals for p = {}'.format(' + '.join([str(p) for p in ps])))
+            ax.boxplot([r, rw])
+            ax.set(ylim=(-0.25, 6.25))
+            ax.set_xticklabels(['Not weighted', 'Weighted'])
+            plt.savefig(args.boxplot)
     else:
         cons, r, u = mLp(A, b, ps, λs, not(args.no_weights))
         print_consensus(cons)
