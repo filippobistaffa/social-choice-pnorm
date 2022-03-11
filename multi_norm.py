@@ -23,8 +23,7 @@ def Lp_norm(A, b, p):
 
 
 def mLp(A, b, ps, λs):
-    wps = [λ / Lp_norm(A, b, p) for λ, p in zip(λs, ps)]
-    # wps = [λ for λ, p in zip(λs, ps)]
+    wps = [λ if args.no_weights else λ / Lp_norm(A, b, p) for λ, p in zip(λs, ps)]
     # print(list(zip(wps, ps)))
     x = cp.Variable(v)
     cost = cp.sum([wp * cp.pnorm(A @ x - b, p) for wp, p in zip(wps, ps)])
@@ -47,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('-r', help='show histogram of residuals', action='store_true')
+    parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
     n = args.n
