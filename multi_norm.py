@@ -22,8 +22,8 @@ def Lp_norm(A, b, p):
     return prob.value
 
 
-def mLp(A, b, ps, λs):
-    wps = [λ if args.no_weights else λ / Lp_norm(A, b, p) for λ, p in zip(λs, ps)]
+def mLp(A, b, ps, λs, weight=True):
+    wps = [λ / Lp_norm(A, b, p) if weight else λ for λ, p in zip(λs, ps)]
     # print(list(zip(wps, ps)))
     x = cp.Variable(v)
     cost = cp.sum([wp * cp.pnorm(A @ x - b, p) for wp, p in zip(wps, ps)])
@@ -45,7 +45,8 @@ if __name__ == '__main__':
     parser.add_argument('-o', type=str, help='write consensus to file')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
-    parser.add_argument('-r', help='show histogram of residuals', action='store_true')
+    parser.add_argument('--histogram', help='show histogram of residuals', action='store_true')
+    parser.add_argument('--boxplot', help='show histogram of residuals', action='store_true')
     parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
@@ -81,20 +82,27 @@ if __name__ == '__main__':
         print('p =', ps)
         print('λ =', λs)
 
-    cons, r, u = mLp(A, b, ps, λs)
-    print_consensus(cons)
+    if args.boxplot:
+        _, r, _ = mLp(A, b, ps, λs, False)
+        _, rw, _ = mLp(A, b, ps, λs, True)
+        import matplotlib.pyplot as plt
+        fig, ax = plt.subplots()
+        ax.set_title('Boxplots of residuals for p = {}'.format(ps))
+        ax.boxplot([r, rw])
+        ax.set_xticklabels(['Not Weighted', 'Weighted'])
+        plt.show()
+    else:
+        cons, r, u = mLp(A, b, ps, λs, not(args.no_weights))
+        print_consensus(cons)
 
-    print('U{} = {:.4f}'.format(ps, u))
-    print('Max residual = {:.4f}'.format(np.max(r)))
+        if args.histogram:
+            print('Residuals distribution:')
+            try:
+                import plotille
+                print(plotille.hist(r))
+            except ImportError:
+                h, b = np.histogram(r, bins=np.arange(10))
+                print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
 
-    if args.r:
-        print('Residuals distribution:')
-        try:
-            import plotille
-            print(plotille.hist(r))
-        except ImportError:
-            h, b = np.histogram(r, bins=np.arange(10))
-            print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
-
-    if args.o:
-        np.savetxt(args.o, cons, fmt='%.20f')
+        if args.o:
+            np.savetxt(args.o, cons, fmt='%.20f')
