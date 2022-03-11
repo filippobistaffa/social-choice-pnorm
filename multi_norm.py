@@ -40,21 +40,23 @@ if __name__ == '__main__':
     parser.add_argument('-m', type=int, default=5, help='m')
     parser.add_argument('-w', type=str, default='w.csv', help='CSV file with weights')
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
-    parser.add_argument('-p', type=str, default='p.csv', help='CSV file with norms')
-    parser.add_argument('-l', type=str, default='l.csv', help='CSV file with lambdas')
+    parser.add_argument('-p', type=int, nargs='+', default=[1, np.inf], help='p-norms')
+    parser.add_argument('-l', type=float, nargs='+', default=[], help='lambdas')
     parser.add_argument('-o', type=str, help='write consensus to file')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('--histogram', help='show histogram of residuals', action='store_true')
-    parser.add_argument('--boxplot', help='show histogram of residuals', action='store_true')
+    parser.add_argument('--boxplot', help='show boxplot of residuals', action='store_true')
     parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
     n = args.n
     m = args.m
-    ps = np.atleast_1d(np.genfromtxt(args.p))
+    ps = np.atleast_1d(args.p)
     ps = np.where(ps == -1, np.inf, ps)
-    λs = np.atleast_1d(np.genfromtxt(args.l))
+    λs = np.ones_like(ps)
+    nλs = min(len(λs), len(args.l))
+    λs[:nλs] = args.l[:nλs]
 
     if args.u:
         idx = []
