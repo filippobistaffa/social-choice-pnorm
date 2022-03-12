@@ -45,9 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', type=str, help='write consensus to file')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
-    parser.add_argument('--histogram', help='show histogram of residuals', action='store_true')
-    parser.add_argument('--boxplot', type=str, help='save boxplot of residuals to image')
-    parser.add_argument('--split', help='one boxplot per norm', action='store_true')
+    parser.add_argument('-P', help='print LaTeX code for PGFPLOTS boxplot', action='store_true')
     parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
@@ -85,38 +83,16 @@ if __name__ == '__main__':
         print('p =', ps)
         print('λ =', λs)
 
-    if args.boxplot:
-        if args.split:
-            rp = [mLp(A, b, [p], [1], False)[1] for p in ps]
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots()
-            ax.set_title('Boxplots of residuals')
-            ax.boxplot(rp)
-            ax.set(ylim=(-0.25, 6.25))
-            ax.set_xticklabels(['p = {}'.format(p) for p in ps])
-            plt.savefig(args.boxplot)
-        else:
-            _, r, _ = mLp(A, b, ps, λs, False)
-            _, rw, _ = mLp(A, b, ps, λs, True)
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots()
-            ax.set_title('Boxplots of residuals for p = {}'.format(' + '.join([str(p) for p in ps])))
-            ax.boxplot([r, rw])
-            ax.set(ylim=(-0.25, 6.25))
-            ax.set_xticklabels(['Not weighted', 'Weighted'])
-            plt.savefig(args.boxplot)
+    cons, res, u = mLp(A, b, ps, λs, not(args.no_weights))
+
+    if args.P:
+        print('\\addplot [mark=*, boxplot]')
+        print('table [row sep=\\\\,y index=0] {')
+        print('    data\\\\')
+        import textwrap
+        string = '\\\\ '.join(['{:.4f}'.format(r) for r in res]) + '\\\\'
+        for line in textwrap.wrap(string, initial_indent='    ', subsequent_indent='    '):
+            print(line)
+        print('};')
     else:
-        cons, r, u = mLp(A, b, ps, λs, not(args.no_weights))
         print_consensus(cons)
-
-        if args.histogram:
-            print('Residuals distribution:')
-            try:
-                import plotille
-                print(plotille.hist(r))
-            except ImportError:
-                h, b = np.histogram(r, bins=np.arange(10))
-                print(np.vstack((h, b[:len(h)], np.roll(b, -1)[:len(h)])))
-
-        if args.o:
-            np.savetxt(args.o, cons, fmt='%.20f')
