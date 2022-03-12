@@ -46,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('-P', help='print LaTeX code for PGFPLOTS boxplot', action='store_true')
+    parser.add_argument('-M', help='perform the Mann-Whitney U test', action='store_true')
     parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
@@ -94,5 +95,11 @@ if __name__ == '__main__':
         for line in textwrap.wrap(string, initial_indent='    ', subsequent_indent='    '):
             print(line)
         print('};')
+    elif args.M:
+        from scipy.stats import mannwhitneyu
+        # compute the other one
+        _, res1, _ = mLp(A, b, ps, λs, args.no_weights)
+        # print(np.stack((res, res1), axis=1))
+        print(mannwhitneyu(res, res1))
     else:
         print_consensus(cons)
