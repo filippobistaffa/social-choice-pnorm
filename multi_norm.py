@@ -102,4 +102,6 @@ if __name__ == '__main__':
         # print(np.stack((res, res1), axis=1))
         print(mannwhitneyu(res, res1))
     else:
+        from scipy import stats
         print_consensus(cons)
+        print(stats.describe(res))
