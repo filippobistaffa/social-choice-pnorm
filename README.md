@@ -55,7 +55,3 @@ optional arguments:
   -M            perform the Mann-Whitney U test
   --no-weights  do not weight norms
 ```
-
-Acknowledgements
-----------
-This repository contains the [implementation of the pIRLS algorithm](https://github.com/fast-algos/pIRLS) ([article](https://papers.nips.cc/paper/2019/hash/46c7cb50b373877fb2f8d5c4517bb969-Abstract.html)) and the [implementation of the General Norm Minimization Solver](https://github.com/yasumat/NormMinimization) ([article](http://www-infobiz.ist.osaka-u.ac.jp/wp-content/uploads/paper/pdf/e-heritage_ACCV2016_FGNA.pdf)). Both articles should be cited when citing our work.
