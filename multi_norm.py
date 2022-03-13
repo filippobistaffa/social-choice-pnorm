@@ -1,7 +1,7 @@
 import argparse as ap
 import cvxpy as cp
 import numpy as np
-np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=4)
+np.set_printoptions(edgeitems=1000, linewidth=1000, suppress=True, precision=3)
 
 
 def print_consensus(cons):
