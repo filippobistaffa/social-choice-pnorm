@@ -105,11 +105,10 @@ if __name__ == '__main__':
         from scipy import stats
         print_consensus(cons)
         nobs, (min, max), mean, variance, skewness, kurtosis = stats.describe(res)
-        colwidth = 13
+        c = 13
         headers = ['min', 'max', 'avg', 'var']
-        print('\n+{}'.format(('-' * colwidth + '+') * len(headers)))
-        print('+{}+'.format('+'.join([str.center(colwidth) for str in headers])))
-        print('+{}'.format(('-' * colwidth + '+') * len(headers)))
-        print('+{}+'.format('+'.join(['{0:.{1}f}'.format(x, colwidth)[:(colwidth-2)].center(colwidth)
-                                     for x in [min, max, mean, variance]])))
-        print('+{}'.format(('-' * colwidth + '+') * len(headers)))
+        print('\n+' + ('-' * c + '+') * len(headers))
+        print('+' + '+'.join([s.center(c) for s in headers]) + '+')
+        print('+' + ('-' * c + '+') * len(headers))
+        print('+' + '+'.join(['{0:.{1}f}'.format(x, c)[:(c-2)].center(c) for x in [min, max, mean, variance]]) + '+') 
+        print('+' + ('-' * c + '+') * len(headers))
