@@ -110,5 +110,5 @@ if __name__ == '__main__':
         print('\n+' + ('-' * c + '+') * len(headers))
         print('+' + '+'.join([s.center(c) for s in headers]) + '+')
         print('+' + ('-' * c + '+') * len(headers))
-        print('+' + '+'.join(['{0:.{1}f}'.format(x, c)[:(c-2)].center(c) for x in [min, max, mean, variance]]) + '+') 
+        print('+' + '+'.join(['{0:.{1}f}'.format(x, c)[:(c-2)].center(c) for x in [min, max, mean, variance]]) + '+')
         print('+' + ('-' * c + '+') * len(headers))
