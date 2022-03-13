@@ -42,7 +42,6 @@ if __name__ == '__main__':
     parser.add_argument('-b', type=str, default='b.csv', help='CSV file with b vector')
     parser.add_argument('-p', type=int, nargs='+', default=[1, np.inf], help='p-norms')
     parser.add_argument('-l', type=float, nargs='+', default=[], help='lambdas')
-    parser.add_argument('-o', type=str, help='write consensus to file')
     parser.add_argument('-u', help='optimize only upper-triangular', action='store_true')
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('-P', help='print LaTeX code for PGFPLOTS boxplot', action='store_true')

@@ -38,7 +38,7 @@ optional arguments:
 Our multi-norm approach must be executed by means of the [`multi_norm.py`](multi_norm.py) Python script, i.e.,
 ```
 usage: multi_norm.py [-h] [-n N] [-m M] [-w W] [-b B] [-p P [P ...]]
-                     [-l L [L ...]] [-o O] [-u] [-v] [-P] [-M] [--no-weights]
+                     [-l L [L ...]] [-u] [-v] [-P] [-M] [--no-weights]
 
 optional arguments:
   -h, --help    show this help message and exit
@@ -48,7 +48,6 @@ optional arguments:
   -b B          CSV file with b vector
   -p P [P ...]  p-norms
   -l L [L ...]  lambdas
-  -o O          write consensus to file
   -u            optimize only upper-triangular
   -v            verbose mode
   -P            print LaTeX code for PGFPLOTS boxplot
