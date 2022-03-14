@@ -46,7 +46,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', help='verbose mode', action='store_true')
     parser.add_argument('-P', help='print LaTeX code for PGFPLOTS boxplot', action='store_true')
     parser.add_argument('-M', help='perform the Mann-Whitney U test', action='store_true')
-    parser.add_argument('--no-weights', help='do not weight norms', action='store_true')
+    parser.add_argument('-L', help='print LaTeX code for stats', action='store_true')
+    parser.add_argument('-W', help='do not weight norms', action='store_true')
     args = parser.parse_args()
 
     n = args.n
@@ -83,7 +84,7 @@ if __name__ == '__main__':
         print('p =', ps)
         print('λ =', λs)
 
-    cons, res, u = mLp(A, b, ps, λs, not(args.no_weights))
+    cons, res, u = mLp(A, b, ps, λs, not(args.W))
 
     if args.P:
         print('\\addplot [mark=*, boxplot]')
@@ -97,17 +98,20 @@ if __name__ == '__main__':
     elif args.M:
         from scipy.stats import mannwhitneyu
         # compute the other one
-        _, res1, _ = mLp(A, b, ps, λs, args.no_weights)
+        _, res1, _ = mLp(A, b, ps, λs, args.W)
         # print(np.stack((res, res1), axis=1))
         print(mannwhitneyu(res, res1))
     else:
         from scipy import stats
-        print_consensus(cons)
         nobs, (min, max), mean, variance, skewness, kurtosis = stats.describe(res)
-        c = 13
-        headers = ['min', 'max', 'avg', 'var']
-        print('\n+' + ('-' * c + '+') * len(headers))
-        print('+' + '+'.join([s.center(c) for s in headers]) + '+')
-        print('+' + ('-' * c + '+') * len(headers))
-        print('+' + '+'.join(['{0:.{1}f}'.format(x, c)[:(c-2)].center(c) for x in [min, max, mean, variance]]) + '+')
-        print('+' + ('-' * c + '+') * len(headers))
+        if args.L:
+            print(f'\\num{{{min:.8f}}} & \\num{{{max:.8f}}} & \\num{{{mean:.8f}}} & \\num{{{variance:.8f}}}')
+        else:
+            print_consensus(cons)
+            c = 13
+            headers = ['min', 'max', 'avg', 'var']
+            print('\n+' + ('-' * c + '+') * len(headers))
+            print('+' + '+'.join([s.center(c) for s in headers]) + '+')
+            print('+' + ('-' * c + '+') * len(headers))
+            print('+' + '+'.join(['{0:.{1}f}'.format(x, c)[:(c-2)].center(c) for x in [min, max, mean, variance]]) + '+')
+            print('+' + ('-' * c + '+') * len(headers))
