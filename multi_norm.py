@@ -18,7 +18,7 @@ def Lp_norm(A, b, p):
     x = cp.Variable(v)
     cost = cp.pnorm(A @ x - b, p)
     prob = cp.Problem(cp.Minimize(cost))
-    prob.solve(solver='CPLEX', verbose=args.v)
+    prob.solve(solver=args.S, verbose=args.v)
     return prob.value
 
 
@@ -28,7 +28,7 @@ def mLp(A, b, ps, λs, weight=True):
     x = cp.Variable(v)
     cost = cp.sum([wp * cp.pnorm(A @ x - b, p) for wp, p in zip(wps, ps)])
     prob = cp.Problem(cp.Minimize(cost))
-    prob.solve(solver='CPLEX', verbose=False, cplex_params={})
+    prob.solve(solver=args.S, verbose=args.v)
     res = np.abs(A @ x.value - b)
     # print([wp * np.linalg.norm(res, p) for wp, p in zip(wps, ps)])
     return x.value, res, prob.value / sum(wps)
@@ -48,6 +48,8 @@ if __name__ == '__main__':
     parser.add_argument('-M', help='perform the Mann-Whitney U test', action='store_true')
     parser.add_argument('-L', help='print LaTeX code for stats', action='store_true')
     parser.add_argument('-W', help='do not weight norms', action='store_true')
+    parser.add_argument('-S', type=str, help='choose solver (either CPLEX or GUROBI)',
+        choices=['CPLEX', 'GUROBI'], default='CPLEX')
     args = parser.parse_args()
 
     n = args.n
