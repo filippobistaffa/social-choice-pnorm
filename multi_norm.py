@@ -18,7 +18,7 @@ def Lp_norm(A, b, p):
     x = cp.Variable(v)
     cost = cp.pnorm(A @ x - b, p)
     prob = cp.Problem(cp.Minimize(cost))
-    prob.solve(solver='CPLEX', verbose=False)
+    prob.solve(solver='CPLEX', verbose=args.v)
     return prob.value
 
 
