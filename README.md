@@ -6,9 +6,9 @@ by Francisco Salas-Molina, Filippo Bistaffa, and Juan A. Rodríguez-Aguilar.
 
 Dependencies
 ----------
- - [Python 3](https://www.python.org/downloads/)
- - [CVXPY](https://www.cvxpy.org/)
- - [IBM CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio)
+ - [Python 3.7](https://www.python.org/downloads/)
+ - [CVXPY 1.2](https://www.cvxpy.org/)
+ - [CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio) or [GUROBI](https://www.gurobi.com)
 
 Dataset
 ----------
