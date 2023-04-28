@@ -29,6 +29,14 @@ def mLp(A, b, ps, λs, weight=True):
     cost = cp.sum([wp * cp.pnorm(A @ x - b, p) for wp, p in zip(wps, ps)])
     prob = cp.Problem(cp.Minimize(cost))
     prob.solve(solver=args.S, verbose=args.v)
+    if False:
+        x.value = np.array([
+            0., 0.40, 0.742, 0.444, 1.932,
+            5, 0., 1.789, 0.435, 2.218,
+            3.489, 3.226, 0., 2.008, 2.02,
+            3.972, 3.829, 2.441, 0., 0.982,
+            3.478, 2.527, 3.634, 3.518, 0.,
+        ])
     res = np.abs(A @ x.value - b)
     psi = np.var([wp * np.linalg.norm(res, p) for wp, p in zip(wps, ps)])
     return x.value, res, prob.value / sum(wps), psi
