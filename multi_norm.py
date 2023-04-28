@@ -97,7 +97,7 @@ if __name__ == '__main__':
     cons, res, u, psi = mLp(A, b, ps, λs, not(args.W))
 
     if args.P:
-        print('\\addplot [mark=*, boxplot]')
+        print('\\addplot [mark=*, boxplot={average=auto}]')
         print('table [row sep=\\\\,y index=0] {')
         print('    data\\\\')
         import textwrap
