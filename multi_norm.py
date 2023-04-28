@@ -107,7 +107,7 @@ if __name__ == '__main__':
         from scipy import stats
         nobs, (min, max), mean, variance, skewness, kurtosis = stats.describe(res)
         if args.L:
-            print(f'\\num{{{min:.8f}}} & \\num{{{max:.8f}}} & \\num{{{mean:.8f}}} & \\num{{{variance:.8f}}}')
+            print(f'\\num{{{min:.8f}}} & \\num{{{max:.8f}}} & \\num{{{mean:.8f}}} & \\num{{{variance:.8f}}} & \\num{{{psi:.8f}}}')
         else:
             print_consensus(cons)
             c = 13
