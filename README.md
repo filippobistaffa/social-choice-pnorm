@@ -1,6 +1,6 @@
 A General Approach for Computing a Consensus in Group Decision Making That Integrates Multiple Ethical Principles
 ===================
-This repository contains the implementation of the algorithm presented by Francisco Salas-Molina, Filippo Bistaffa, and Juan A. Rodríguez-Aguilar in "[A General Approach for Computing a Consensus in Group Decision Making That Integrates Multiple Ethical Principles](https://www.sciencedirect.com/science/article/pii/S0038012123002069/pdfft?md5=bf631ed1e2094c91969e057c0f9b65b7&pid=1-s2.0-S0038012123002069-main.pdf)", Socio-Economic Planning Sciences, in press, DOI: [10.1016/j.seps.2023.101694](https://doi.org/10.1016/j.seps.2023.101694).
+This repository contains the implementation of the algorithm presented by Francisco Salas-Molina, Filippo Bistaffa, and Juan A. Rodríguez-Aguilar in "[A General Approach for Computing a Consensus in Group Decision Making That Integrates Multiple Ethical Principles](https://www.sciencedirect.com/science/article/pii/S0038012123002069/pdfft?md5=bf631ed1e2094c91969e057c0f9b65b7&pid=1-s2.0-S0038012123002069-main.pdf)", Socio-Economic Planning Sciences volume 89, 2023, DOI: [10.1016/j.seps.2023.101694](https://doi.org/10.1016/j.seps.2023.101694).
 
 Dependencies
 ----------
